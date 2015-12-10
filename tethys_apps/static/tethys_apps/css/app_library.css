@@ -135,13 +135,17 @@ body {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
+  -webkit-transition: transform 500ms;
+  -moz-transition: transform 500ms;
+  -o-transition: transform 500ms;
+  -ms-transition: transform 500ms;
   transition: transform 500ms;
 }
 #app-list .app-card figure {
   border-radius: 5px;
   width: 100%;
   height: 100%;
-  backface-visibility: initial;
+  backface-visibility: hidden;
 }
 #app-list .app-card-back {
   width: 100%;
@@ -171,6 +175,7 @@ body {
 #app-list .app-card:hover{
   transform: rotateY( 180deg );
   transition-delay: .5s;
+  text-decoration: none;
 }
 #app-list .app-container .app-icon img {
   width: 170px;
