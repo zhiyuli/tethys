@@ -135,13 +135,13 @@ body {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transition: transform 1s;
+  transition: transform 500ms;
 }
 #app-list .app-card figure {
   border-radius: 5px;
   width: 100%;
   height: 100%;
-  backface-visibility: hidden;
+  backface-visibility: initial;
 }
 #app-list .app-card-back {
   width: 100%;
@@ -202,7 +202,7 @@ body {
 #app-list .app-card-front:hover {
   box-shadow: 0px 0 10px 0 rgba(0, 0, 0, 0.1);
   text-decoration: none;
-
+  display: block;
 }
 #app-list .app-container:hover .color-effect {
   display: block;
