@@ -29,8 +29,8 @@
       <div id="app-list">
         {% for app in apps %}
           <a class="app-container" href="javascript:void(0);" onclick="TETHYS_APPS_LIBRARY.launch_app(this, '{% url app.index %}');" data-app-theme-color="{{ app.color }}">
-            <div class="app-card">
-              <figure class="app-card-front">
+{#            <div class="app-card">#}
+{#              <figure class="app-card-front">#}
                 <div class="app-icon">
                   <img {% if app.icon %}src="{% static app.icon %}"{% else %}src="{% static 'tethys_apps/images/default_app_icon.gif' %}"{% endif %} />
                 </div>
@@ -38,14 +38,14 @@
                   <span>{{ app.name }}</span>
                 </div>
                 <div class="color-effect" data-app-theme-color="{{ app.color }}"></div>
-              </figure>
-              <figure class="app-card-back">
-                <div class="app-icon">
-                  <img {% if app.icon %}src="{% static app.icon %}"{% else %}src="{% static 'tethys_apps/images/default_app_icon.gif' %}"{% endif %} />
-                </div>
-                <div class="app-description">{{ app.description }}</div>
-              </figure>
-            </div>
+{#              </figure>#}
+{#              <figure class="app-card-back">#}
+{#                <div class="app-icon">#}
+{#                  <img {% if app.icon %}src="{% static app.icon %}"{% else %}src="{% static 'tethys_apps/images/default_app_icon.gif' %}"{% endif %} />#}
+{#                </div>#}
+{#                <div class="app-description">{{ app.description }}</div>#}
+{#              </figure>#}
+{#            </div>#}
           </a>
         {% endfor %}
 
