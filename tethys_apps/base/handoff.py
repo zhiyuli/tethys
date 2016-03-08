@@ -9,12 +9,17 @@
 """
 import inspect
 import json
+
+from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.http import HttpResponseBadRequest
 
 import tethys_apps
 from tethys_apps.base.persistent_store import TethysFunctionExtractor
 
+
+NEXT_HANDOFF_KEY = 'next_handoff'
+NEXT_HANDOFF_LIST_KEY = 'next_handoff_list'
 
 class HandoffManager(object):
     """
@@ -84,7 +89,7 @@ class HandoffManager(object):
                 if handler.name == handler_name:
                     return handler
 
-    def handoff(self, request, handler_name, app_name=None, external_only=True, **kwargs):
+    def handoff(self, request, handler_name, app_name=None, next_handoff_list=None, external_only=True, **kwargs):
         """
         Calls handler if it is not internal and if it exists for the app.
 
@@ -92,6 +97,7 @@ class HandoffManager(object):
             request (HttpRequest): The request object passed by the http call.
             handler_name (str): The name of the HandoffHandler object to handle the handoff. Must not be internal.
             app_name (str, optional): The name of another app where the handler should exist. Defaults to None in which case the current app will attempt to handle the handoff.
+            next_handoff_list (list, optional): A list of urls or namespaced urlnames (e.g. 'my_app:url'), or namespaced handoff handler names (e.g. 'my_app:handler') that form a sequense of handoffs.
             **kwargs: Key-value pairs to be passed on to the handler.
 
         Returns:
@@ -110,6 +116,7 @@ class HandoffManager(object):
             handler = manager.get_handler(handler_name)
             if not handler.internal:
                 try:
+                    request.session[NEXT_HANDOFF_LIST_KEY] = next_handoff_list
                     urlish = handler(request, **kwargs)
                     return redirect(urlish)
                 except TypeError as e:
@@ -156,7 +163,7 @@ class HandoffManager(object):
             else:
                 handler_str = handler.handler
                 if ':' in handler_str:
-                    print('DEPRECATION WARNING: The handler attribute of a HandoffHandler should now be in the form: "my_first_app.controllers.my_handler". The form "handoff:my_handler" is now deprecated.')
+                    print('DEPRECATION WARNING: The handler attribute of a HandoffHandler should now be in the form: "my_first_app.controllers.my_handler". The form "%s" is now deprecated.' % (handler_str,))
 
                     # Split into module name and function name
                     module_path, function_name  = handler_str.split(':')

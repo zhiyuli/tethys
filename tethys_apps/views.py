@@ -8,13 +8,15 @@
 ********************************************************************************
 """
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.core.urlresolvers import reverse, NoReverseMatch
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 
 from tethys_apps.app_harvester import SingletonAppHarvester
 from tethys_apps.base.app_base import TethysAppBase
+from tethys_apps.base.handoff import NEXT_HANDOFF_LIST_KEY, NEXT_HANDOFF_KEY
 
 from tethys_compute.models import TethysJob
 
@@ -54,7 +56,37 @@ def handoff(request, app_name, handler_name):
 
     manager = TethysAppBase.get_handoff_manager()
 
-    return manager.handoff(request, handler_name, app_name, **request.GET.dict())
+    # Copy GET QueryDict to make it mutable
+    get_parameters = request.GET.copy()
+
+    next_handoff_list = get_parameters.pop(NEXT_HANDOFF_KEY)
+
+    return manager.handoff(request, handler_name, app_name, next_handoff_list, **get_parameters.dict())
+
+
+@login_required()
+def next_handoff(request):
+    """
+    Handle handoff requests.
+    """
+    next_handoff_url = request.session[NEXT_HANDOFF_LIST_KEY].pop(0)
+    request.session.modified = True
+    redirect_url = next_handoff_url
+
+    if ':' in next_handoff_url:
+        app_name, handler_name = next_handoff_url.split(':')
+        manager = TethysAppBase.get_handoff_manager()
+        handler = manager.get_handler(handler_name, app_name)
+        if handler:
+            redirect_url = reverse(handler(request, **request.GET.dict()))
+        else:
+            try:
+                redirect_url = reverse(next_handoff_url)
+            except NoReverseMatch:
+                pass
+
+    return redirect('{0}?{1}'.format(redirect_url, request.GET.urlencode()))
+    # return redirect(redirect_url)
 
 
 @login_required()
@@ -123,6 +155,7 @@ def send_beta_feedback_email(request):
     json = {'success': True,
             'result': 'Emails sent to specified developers'}
     return JsonResponse(json)
+
 
 def update_job_status(request, job_id):
     """
