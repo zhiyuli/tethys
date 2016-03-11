@@ -79,14 +79,6 @@ MIDDLEWARE_CLASSES = (
     'tethys_portal.middleware.TethysSocialAuthExceptionMiddleware',
 )
 
-AUTHENTICATION_BACKENDS = (
-#    'tethys_services.backends.hydroshare.HydroShareOAuth2',
-#    'social.backends.linkedin.LinkedinOAuth2',
-#    'social.backends.google.GoogleOAuth2',
-#    'social.backends.facebook.FacebookOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-)
-
 ROOT_URLCONF = 'tethys_portal.urls'
 
 WSGI_APPLICATION = 'tethys_portal.wsgi.application'
@@ -220,6 +212,14 @@ ENABLE_OPEN_SIGNUP = False
 #EMAIL_USE_TLS = False
 #DEFAULT_FROM_EMAIL = 'Example <noreply@exmaple.com>'
 
+AUTHENTICATION_BACKENDS = (
+#    'tethys_services.backends.arcgis.ArcGISOAuth2',
+#    'tethys_services.backends.hydroshare.HydroShareOAuth2',
+#    'social.backends.linkedin.LinkedinOAuth2',
+#    'social.backends.google.GoogleOAuth2',
+#    'social.backends.facebook.FacebookOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # OAuth Settings
 # http://psa.matiasaguirre.net/docs/configuration/index.html
@@ -245,3 +245,8 @@ SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET = ''
 ## HydroShare
 SOCIAL_AUTH_HYDROSHARE_KEY = ''
 SOCIAL_AUTH_HYDROSHARE_SECRET = ''
+
+## Esri
+SOCIAL_AUTH_ARCGIS_KEY = ''
+SOCIAL_AUTH_ARCGIS_SECRET = ''
+SOCIAL_AUTH_ARCGIS_AUTH_EXTRA_ARGUMENTS = {'grant_type': 'client_credentials'}

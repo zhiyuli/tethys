@@ -79,6 +79,8 @@
                   <a href="{% url 'user:disconnect' user.username 'facebook' association.id %}"><span class="label label-facebook">Disconnect Facebook</span></a>
                 {% elif 'hydroshare' in association.provider %}
                   <a href="{% url 'user:disconnect' user.username 'hydroshare' association.id %}"><span class="label label-hydroshare">Disconnect HydroShare</span></a>
+                {% elif 'arcgis' in association.provider %}
+                  <a href="{% url 'user:disconnect' user.username 'arcgis' association.id %}"><span class="label label-arcgis">Disconnect ArcGIS</span></a>
                 {% endif %}
               {% endfor %}
             {% else %}
@@ -91,6 +93,8 @@
                   <span class="label label-facebook">Facebook</span>
                 {% elif 'hydroshare' in backend.provider %}
                   <span class="label label-hydroshare">HydroShare</span>
+                {% elif 'arcgis' in backend.provider %}
+                  <span class="label label-arcgis">ArcGIS</span>
                 {% endif %}
               {% endfor %}
             {% endif %}
@@ -115,6 +119,8 @@
                 <a href="{% url 'social:begin' 'facebook' %}?next={{ request.path }}"><span class="label label-facebook">Connect Facebook</span></a>
               {% elif 'hydroshare' in backend %}
                 <a href="{% url 'social:begin' 'hydroshare' %}?next={{ request.path }}"><span class="label label-hydroshare">Connect HydroShare</span></a>
+              {% elif 'arcgis' in backend %}
+                <a href="{% url 'social:begin' 'arcgis' %}?next={{ request.path }}"><span class="label label-arcgis">Connect ArcGIS</span></a>
               {% endif %}
             {% endfor %}
           </div>
