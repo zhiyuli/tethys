@@ -113,7 +113,7 @@
               {% endblock %}
               {% block exit_button_override %}
                 <div class="exit-button">
-                  {% if request.session.next_handoff_list %}
+                  {% if request.session.next_handoff_list.0 %}
                     <a href="{% url 'next_handoff' %}?{{ request.GET.urlencode }}">Back</a>
                   {% else %}
                     <a href="javascript:void(0);" onclick="TETHYS_APP_BASE.exit_app('{% url 'app_library' %}');">Exit</a>

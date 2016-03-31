@@ -123,7 +123,7 @@ class HandoffManager(object):
                     error['message'] = "HTTP 400 Bad Request: {0}. ".format(e.message)
                     return HttpResponseBadRequest(json.dumps(error), content_type='application/javascript')
 
-        error['message'] = "HTTP 400 Bad Request: No handoff handler '{0}' for app '{1}' found.".format(manager.app.name, handler_name)
+        error['message'] = "HTTP 400 Bad Request: No handoff handler '{0}' for app '{1}' found.".format(handler_name, manager.app.package)
         return HttpResponseBadRequest(json.dumps(error), content_type='application/javascript')
 
     def _get_handoff_manager_for_app(self, app_name):

@@ -28,7 +28,8 @@ class TethysFunctionExtractor(object):
         self._valid = None
         self._function = None
 
-        if path.callable():
+        # if path.callable():  # This can be used in Python 3
+        if hasattr(path, '__cal__'):
             self.valid = True  # TODO should we ensure that function is part of the app?
             self.function = path
 
