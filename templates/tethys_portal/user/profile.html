@@ -117,6 +117,8 @@
                         <span class="label label-facebook">Facebook</span>
                       {% elif 'hydroshare' in backend.provider %}
                         <span class="label label-hydroshare">HydroShare</span>
+                      {% elif 'arcgis' in backend.provider %}
+                        <span class="label label-arcgis">ArcGIS</span>
                       {% endif %}
                     {% endfor %}
                   </div>
@@ -140,6 +142,8 @@
                         <span class="label label-facebook">Facebook</span>
                       {% elif 'hydroshare' in backend %}
                         <span class="label label-hydroshare">HydroShare</span>
+                      {% elif 'arcgis' in backend %}
+                        <span class="label label-arcgis">ArcGIS</span>
                       {% endif %}
                     {% endfor %}
                   </div>
@@ -179,11 +183,8 @@
 {% block scripts %}
   {{ block.super }}
   <script>
-
     function resize_profile_name() {
       var profile_name_element, name_height, header_height;
-
-
 
       profile_name_element = $('.profile-header .profile-name');
       name_height = parseInt(profile_name_element.css('height'));

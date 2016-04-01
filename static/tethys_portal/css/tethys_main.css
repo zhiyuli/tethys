@@ -2030,6 +2030,22 @@ footer.site-footer .tethys-attribution a:hover {
 .btn-facebook:focus .fa-facebook {
   color: #ffffff;
 }
+.btn-arcgis {
+  color: #555555;
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+.btn-arcgis:hover {
+  color: #ffffff;
+  background-color: #0076BC;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+.fa-arcgis {
+  background-image: url(/static/tethys_portal/images/esri-icon-sm.png);
+  background-repeat: no-repeat;
+  background-size: 75%;
+  background-position: 4px 5px;
+}
 .btn-social {
   font-size: 15px;
   font-weight: 500;
@@ -2286,6 +2302,14 @@ footer.site-footer .tethys-attribution a:hover {
 .label-hydroshare:hover {
   color: #ffffff;
   background-color: #71a43a;
+}
+.label-arcgis {
+  color: #0076BC;
+  border: #aaaaaa solid 1px;
+}
+.label-arcgis:hover {
+  color: #ffffff;
+  background-color: #0076BC;
 }
 .label-linkedin {
   color: #007bb6;

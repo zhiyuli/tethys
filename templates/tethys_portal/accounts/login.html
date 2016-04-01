@@ -22,6 +22,11 @@
         </div>
         <div class="account-form-body">
           <form role="form" method="post">
+            {% if 'arcgis' in backends.not_associated %}
+              <a class="btn btn-block btn-social btn-arcgis" href="{% url 'social:begin' 'arcgis' %}">
+                <i class="fa fa-arcgis"></i> Sign in with ArcGIS
+              </a>
+            {% endif %}
             {% if 'hydroshare' in backends.not_associated %}
               <a class="btn btn-block btn-social btn-hydroshare" href="{% url 'social:begin' 'hydroshare' %}">
                 <i class="fa fa-hydroshare"></i> Sign in with HydroShare
