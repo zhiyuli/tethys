@@ -45,26 +45,32 @@ var TETHYS_PLOT_VIEW = (function() {
  		}
  	};
 
-	initD3Plot = function(element, json) {
-	    var chart_type;
+	initD3Plot = function(element) {
+	    if ($(element).attr('data-json')) {
+            var json_string, json;
 
-	    chart_type = json.chart_type;
-        var svg;
-	    if ('type' in json.chart) {
-	        if (json.chart.type === 'line' || json.chart.type === 'spline') {
-	            initD3LinePlot(element, json);
-            } else if (json.chart.type === 'scatter') {
-                initD3ScatterPlot(element, json);
-            } else if (json.chart.type === 'column' || json.chart.type === 'bar') {
-                initD3BarPlot(element, json);
-            } else if (json.chart.type === 'area') {
-                initD3TimeSeriesPlot(element, json);
+            // Get string from data-json attribute of element
+            json_string = $(element).attr('data-json');
+
+            // Parse the json_string with special reviver
+            json = JSON.parse(json_string, functionReviver);
+
+            if ('type' in json.chart) {
+                if (json.chart.type === 'line' || json.chart.type === 'spline') {
+                    initD3LinePlot(element, json);
+                } else if (json.chart.type === 'scatter') {
+                    initD3ScatterPlot(element, json);
+                } else if (json.chart.type === 'column' || json.chart.type === 'bar') {
+                    initD3BarPlot(element, json);
+                } else if (json.chart.type === 'area') {
+                    initD3TimeSeriesPlot(element, json);
+                }
+            } else  if ('plotOptions' in json) {
+                var plot_options = json.plotOptions;
+                if ('pie' in plot_options) {
+                    initD3PiePlot(element, json);
+                }
             }
-	    } else  if ('plotOptions' in json) {
-	        var plot_options = json.plotOptions;
-	        if ('pie' in plot_options) {
-	            initD3PiePlot(element, json);
-	        }
 	    }
 	};
 
@@ -848,6 +854,17 @@ var TETHYS_PLOT_VIEW = (function() {
 	 */
 	public_interface = {
         initHighChartsPlot: initHighChartsPlot,
+        initPlot: function(elements){
+            elements.each(function(){
+                if($(this).hasClass('d3-plot')){
+                    initD3Plot(this);
+                }
+                if($(this).hasClass('highcharts-plot')){
+                    initHighChartsPlot(this);
+                }
+            });
+
+        },
      };
 
 
@@ -856,17 +873,7 @@ var TETHYS_PLOT_VIEW = (function() {
 	$(function() {
 		// Initialize any d3 plots
 		$('.d3-plot').each(function() {
-		    if ($(this).attr('data-json')) {
-		        var json_string, json;
-
-                // Get string from data-json attribute of element
-                json_string = $(this).attr('data-json');
-
-                // Parse the json_string with special reviver
-                json = JSON.parse(json_string, functionReviver);
-
-		        initD3Plot(this, json);
-		    }
+		    initD3Plot(this);
 		});
 
 		// Initialize any plots
@@ -884,17 +891,7 @@ var TETHYS_PLOT_VIEW = (function() {
 	        redraw = false;
 	        $('.d3-plot').each(function() {
                 $(this).empty();
-                if ($(this).attr('data-json')) {
-                    var json_string, json;
-
-                    // Get string from data-json attribute of element
-                    json_string = $(this).attr('data-json');
-
-                    // Parse the json_string with special reviver
-                    json = JSON.parse(json_string, functionReviver);
-
-                    initD3Plot(this, json);
-		        }
+                initD3Plot(this);
 		    });
 		    redraw = true;
 	    }
