@@ -174,96 +174,17 @@ def get_api_version(*versions):
 
 def get_docker_client():
     """
-    Try to fire up boot2docker and set any environmental variables
+    Get the docker client.
     """
-    # For Mac
-    try:
-        # Get boot2docker info (will fail if not Mac)
-        process = ['boot2docker', 'info']
-        p = subprocess.Popen(process, stdout=PIPE)
-        boot2docker_info = json.loads(p.communicate()[0])
+    # Find the right version of the API by creating a DockerClient with the minimum working version
+    # Then test to see if the Docker is running a later version than the minimum
+    # See: https://github.com/docker/docker-py/issues/439
+    version_client = DockerClient(base_url='unix://var/run/docker.sock', version=MINIMUM_API_VERSION)
+    version = get_api_version(MAX_CLIENT_DOCKER_API_VERSION, version_client.version()['ApiVersion'])
+    docker_client = DockerClient(base_url='unix://var/run/docker.sock', version=version)
+    docker_client.host = DEFAULT_DOCKER_HOST
 
-        # Defaults
-        docker_host = ''
-        docker_cert_path = ''
-        docker_tls_verify = ''
-
-        # Start the boot2docker VM if it is not already running
-        if boot2docker_info['State'] != "running":
-            print('Starting Boot2Docker VM:')
-            # Start up the Docker VM
-            process = ['boot2docker', 'start']
-            subprocess.call(process)
-
-        if ('DOCKER_HOST' not in os.environ) or ('DOCKER_CERT_PATH' not in os.environ) or ('DOCKER_TLS_VERIFY' not in os.environ):
-            # Get environmental variable values
-            process = ['boot2docker', 'shellinit']
-            p = subprocess.Popen(process, stdout=PIPE)
-            boot2docker_envs = p.communicate()[0].split()
-
-            for env in boot2docker_envs:
-                if 'DOCKER_HOST' in env:
-                    docker_host = env.split('=')[1]
-                elif 'DOCKER_CERT_PATH' in env:
-                    docker_cert_path = env.split('=')[1]
-                elif 'DOCKER_TLS_VERIFY' in env:
-                    docker_tls_verify = env.split('=')[1]
-
-            # Set environmental variables
-            os.environ['DOCKER_TLS_VERIFY'] = docker_tls_verify
-            os.environ['DOCKER_HOST'] = docker_host
-            os.environ['DOCKER_CERT_PATH'] = docker_cert_path
-        else:
-            # Handle case when boot2docker is already running
-            docker_host = os.environ['DOCKER_HOST'].split('=')[1]
-
-        # Get the arguments form the environment
-        client_kwargs = kwargs_from_env(assert_hostname=False)
-        client_kwargs['version'] = MINIMUM_API_VERSION
-
-        # Find the right version of the API by creating a DockerClient with the minimum working version
-        # Then test to see if the Docker is running a later version than the minimum
-        # See: https://github.com/docker/docker-py/issues/439
-        version_client = DockerClient(**client_kwargs)
-        client_kwargs['version'] = get_api_version(MAX_CLIENT_DOCKER_API_VERSION, version_client.version()['ApiVersion'])
-
-        # Create Real Docker client
-        docker_client = DockerClient(**client_kwargs)
-
-        # Derive the host address only from string formatted: "tcp://<host>:<port>"
-        docker_client.host = docker_host.split(':')[1].strip('//')
-
-        return docker_client
-
-    # For Linux
-    except OSError:
-        # Find the right version of the API by creating a DockerClient with the minimum working version
-        # Then test to see if the Docker is running a later version than the minimum
-        # See: https://github.com/docker/docker-py/issues/439
-        version_client = DockerClient(base_url='unix://var/run/docker.sock', version=MINIMUM_API_VERSION)
-        version = get_api_version(MAX_CLIENT_DOCKER_API_VERSION, version_client.version()['ApiVersion'])
-        docker_client = DockerClient(base_url='unix://var/run/docker.sock', version=version)
-        docker_client.host = DEFAULT_DOCKER_HOST
-
-        return docker_client
-
-    except:
-        raise
-
-
-def stop_boot2docker():
-    """
-    Shut down boot2docker if applicable
-    """
-    try:
-        process = ['boot2docker', 'stop']
-        subprocess.call(process)
-        print('Boot2Docker VM Stopped')
-    except OSError:
-        pass
-
-    except:
-        raise
+    return docker_client
 
 
 def get_images_to_install(docker_client, containers=ALL_DOCKER_INPUTS):
@@ -334,32 +255,43 @@ def log_pull_stream(stream):
     previous_message = ''
 
     for line in stream:
-        json_line = json.loads(line)
-        current_id = json_line['id'] if 'id' in json_line else ''
-        current_status = json_line['status'] if 'status' in json_line else ''
+        print(line)
 
-        # Update prompt
-        backspaces = '\b' * len(previous_message)
-        spaces = ' ' * len(previous_message)
-        current_message = '\n{0}: {1}'.format(current_id, current_status)
+        # Some of the images can be pulled in parallel, so there will be multiple results
+        parts_delimiter = '{"status"'
+        parts = line.split(parts_delimiter)
 
-        if current_status == 'Downloading' or current_status == 'Extracting':
-            current_message = '{0} {1}'.format(current_message, json_line['progress'])
+        for part in parts:
+            # Check for occasional empty part
+            if not part:
+                continue
+            reconstructed = parts_delimiter + part
+            json_line = json.loads(reconstructed)
+            current_id = json_line['id'] if 'id' in json_line else ''
+            current_status = json_line['status'] if 'status' in json_line else ''
 
-        # Handle no id case
-        if not current_id:
-            sys.stdout.write('\n{0}'.format(current_status))
+            # Update prompt
+            backspaces = '\b' * len(previous_message)
+            spaces = ' ' * len(previous_message)
+            current_message = '\n{0}: {1}'.format(current_id, current_status)
 
-        # Overwrite current line if id is the same
-        elif current_id == previous_id:
-            sys.stdout.write(backspaces)
-            sys.stdout.write(spaces)
-            sys.stdout.write(backspaces)
-            sys.stdout.write(current_message.strip())
+            if current_status == 'Downloading' or current_status == 'Extracting':
+                current_message = '{0} {1}'.format(current_message, json_line['progress'])
 
-        # Start new line
-        else:
-            sys.stdout.write(current_message)
+            # Handle no id case
+            if not current_id:
+                sys.stdout.write('\n{0}'.format(current_status))
+
+            # Overwrite current line if id is the same
+            elif current_id == previous_id:
+                sys.stdout.write(backspaces)
+                sys.stdout.write(spaces)
+                sys.stdout.write(backspaces)
+                sys.stdout.write(current_message.strip())
+
+            # Start new line
+            else:
+                sys.stdout.write(current_message)
 
         # Flush to out
         sys.stdout.flush()
@@ -931,7 +863,7 @@ def docker_start(containers):
     start_docker_containers(docker_client, containers=containers)
 
 
-def docker_stop(containers=None, boot2docker=False):
+def docker_stop(containers=None):
     """
     Stop Docker containers
     """
@@ -941,10 +873,6 @@ def docker_stop(containers=None, boot2docker=False):
 
     # Stop the Docker containers
     stop_docker_containers(docker_client, containers=containers)
-
-    # Shutdown boot2docker if applicable
-    if boot2docker and not containers:
-        stop_boot2docker()
 
 
 def docker_restart(containers=None):
