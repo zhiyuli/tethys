@@ -30,4 +30,3 @@ deploy:
   stage: deploy
   script:
     - echo "TEST"
-  when: manual
