@@ -1,1 +1,33 @@
+image: docker:git
 
+stages:
+  - build
+  - deploy
+
+before_script:
+  # Set up ssh-agent for use when checking out other repos
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" > key
+  - chmod 600 key
+  - ssh-add key
+  - ssh-add -l
+  # Add known host keys
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
+
+build:
+  stage: build
+  script:
+    # Docker Stuff
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE/citywater:latest .
+    - docker push $CI_REGISTRY_IMAGE/tethys/tethyscore:latest
+  tags:
+    - docker
+    
+deploy:
+  stage: deploy
+  script:
+    - echo "TEST"
+  when: manual
