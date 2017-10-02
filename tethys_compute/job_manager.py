@@ -54,7 +54,7 @@ class JobManager(object):
             # TODO remove when JobTemplate is made completely abstract
             if template.__class__ == JobTemplate:
                 msg = 'The job template "{0}" in the app "{1}" uses JobTemplate directly. ' \
-                      'This is now depreciated. Please use the job type specific template {2} instead.'\
+                      'This is now depreciated. Please use the job type specific template {2} instead.' \
                     .format(template.name, self.app.package, JOB_CAST[template.type].__name__)
                 warnings.warn(msg, DeprecationWarning)
                 template.__class__ = JOB_CAST[template.type]
@@ -195,7 +195,7 @@ class JobManager(object):
                      dict: replace_in_dict,
                      list: replace_in_list,
                      tuple: replace_in_tuple,
-                    }
+                     }
 
         new_parameters = dict()
         for parameter, value in parameters.iteritems():
@@ -227,7 +227,9 @@ class JobTemplate(object):
         pass
 
     def create_job(self, app_workspace, user_workspace, **kwargs):
+        print '****HERE 1*****', self.parameters, '\n\n'
         parameters = JobManager._replace_workspaces(self.parameters, app_workspace, user_workspace)
+        print '****HERE 2*****', parameters, '\n\n'
         kwargs.update(parameters)
         job = self.type(**kwargs)
         return job
@@ -259,7 +261,9 @@ class CondorJobDescription(object):
         if condorpy_template_name:
             template = CondorJob.get_condorpy_template(condorpy_template_name)
             self.attributes.update(template)
+        print "HERE 0", kwargs
         self.attributes.update(kwargs)
+        print "HERE 0a", self.attributes
 
     def process_attributes(self, app_workspace, user_workspace):
         self.__dict__ = JobManager._replace_workspaces(self.__dict__, app_workspace, user_workspace)
@@ -281,12 +285,14 @@ class CondorJobTemplate(JobTemplate):
         # TODO job_description will be required when parameters is fully deprecated
         if job_description:
             parameters['remote_input_files'] = job_description.remote_input_files
+            print 'TEST', job_description.attributes
             parameters['_attributes'] = job_description.attributes
         else:
             msg = 'The job_description argument was not defined in the job_template {0}. ' \
                   'This argument will be required in version 1.5 of Tethys.'.format(name)
             warnings.warn(msg, DeprecationWarning)
         parameters.update(kwargs)
+        print 'TEST 2', parameters
         super(self.__class__, self).__init__(name, JOB_TYPES['CONDORJOB'], parameters)
 
     def process_parameters(self):
@@ -295,6 +301,9 @@ class CondorJobTemplate(JobTemplate):
         def update_attribute(attribute_name):
             if attribute_name in self.parameters:
                 attribute = self.parameters.pop(attribute_name)
+                attributes[attribute_name] = attribute
+            if '_attributes' in self.parameters and attribute_name in self.parameters['_attributes']:
+                attribute = self.parameters['_attributes'].pop(attribute_name)
                 attributes[attribute_name] = attribute
 
         if 'condorpy_template_name' in self.parameters:
