@@ -21,7 +21,7 @@ build:
   script:
     # Docker Stuff
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY_IMAGE/citywater:latest .
+    - docker build -t $CI_REGISTRY_IMAGE/tethyscore:latest .
     - docker push $CI_REGISTRY_IMAGE/tethyscore:latest
   tags:
     - docker
