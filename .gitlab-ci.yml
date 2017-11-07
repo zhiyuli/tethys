@@ -2,7 +2,6 @@ image: docker:git
 
 stages:
   - build
-  - deploy
 
 before_script:
   # Set up ssh-agent for use when checking out other repos
@@ -27,8 +26,3 @@ build:
     - docker
   only:
     - tags
-    
-deploy:
-  stage: deploy
-  script:
-    - echo "TEST"
