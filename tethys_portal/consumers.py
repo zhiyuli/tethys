@@ -8,7 +8,8 @@ from channels.generic.http import AsyncHttpConsumer
 class BasicHttpConsumer(AsyncHttpConsumer):
 
     # How to test this async endpoint
-    # Open 2 blank browser tabs, run the two url at the same time
+    # Open 2 blank browser tabs, run the two urls at the same time
+    # See: https://www.tornadoweb.org/en/stable/faq.html#my-code-is-asynchronous-but-it-s-not-running-in-parallel-in-two-browser-tabs
     # http://127.0.0.1:8000/asynchttp?x=1
     # http://127.0.0.1:8000/asynchttp?a=2
     # check the 2 "t_start" values, the difference of which should be less than 1 second
